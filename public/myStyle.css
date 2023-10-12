@@ -12,6 +12,10 @@
 
 .nftCard {
     width: 100px;
-    height: 100px;;
+    /* height: 100px; */
     background-color: grey;
+}
+
+.nftCard img {
+    width: 100%;
 }

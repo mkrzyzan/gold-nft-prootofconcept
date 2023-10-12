@@ -69,6 +69,8 @@ async function getAllMintedTokensViaMyAPI() {
     data.nfts.forEach((nft) => {
         // add div to mintedNFTs div
         const div = document.createElement('div');
+
+
         div.innerText = nft.tokenId;
         // set class attribute
         div.setAttribute('class', 'nftCard');
@@ -81,6 +83,12 @@ async function getAllMintedTokensViaMyAPI() {
         button2.innerText = 'Trade';
         button2.setAttribute('class', 'transferButton');
         button2.addEventListener('click', () => onBurnRequest(nft.tokenId));
+
+        // add media.gateway image to the div
+        const img = document.createElement('img');
+        img.src = nft.media[0].gateway;
+
+        div.appendChild(img);
         div.appendChild(button1);
         div.appendChild(button2);
         mintedNFTs.appendChild(div);

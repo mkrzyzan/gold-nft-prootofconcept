@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>gold NFTS</title>
+    <!-- load web3 library in exact version 4.1.2. Use jsdelivr service -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/web3@4.1.2/dist/web3.min.js" integrity="sha256-pf303eAt9+n1XyZ4G6qQaNu+pdM42HaK4wo0Qk8goNs=" crossorigin="anonymous"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js" crossorigin="anonymous"></script>
+    <!-- reference ./myScript.js here -->
+    <script src="./myScript.js"></script>
+    <!-- reference ./myStyle.css  -->
+    <link rel="stylesheet" href="./myStyle.css">
+</head>
+<body>
+    <header>
+        <h1>Gold repo</h1>
+        <p>Manage your <p>gold NFT</p> with ease</p>
+        <button id="connectToWallet">Connect Wallet</button>
+        <button id="cleanData">Clean Data</button>
+    </header>
+
+    <!-- main section -->
+    <main>
+        <section id="mint">
+            <h2>Mint</h2>
+            <p id="mintAddress">Mint Address: </p>
+            <p id="mintBalance">Mint Balance: </p>
+            <button id="mintingButton">Mint</button>
+            <!-- textarea for mining data -->
+            <textarea id="nftData" cols="30" rows="6">Location: Bangkok, Weight: 100g, Fineness 99.99%, Name/Series: MTS Premium Bullion, Minter: MTS, Shop Purchased: MTS Gold Co. Ltd., Bar Number: H87878787</textarea>
+            <!-- input for imageUrl -->
+            <input type="text" id="imageUrl" placeholder="Image URL" value="https://cdn.pixabay.com/photo/2016/03/31/20/18/gold-1295668_640.jpg">
+            <!-- input for NFT id -->
+            <input type="text" id="nftId" placeholder="NFT ID">
+        </section>
+        
+        <section id="wallet">
+            <h2>Wallet</h2>
+            <p id="walletAddress">Wallet Address: </p>
+            <p id="walletBalance">Wallet Balance: </p>
+        </section>
+
+        <section id="nft">
+            <h2>NFT</h2>
+            <p id="nftAddress">NFT Address: </p>
+            <p id="nftBalance">NFT Balance: </p>
+            <div id="mintedNfts"></div>
+        </section>
+
+    </main>
+</body>
+</html>

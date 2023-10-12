@@ -1,3 +1,4 @@
+const fetch = require('node-fetch');
 const { Alchemy, Network } = require("alchemy-sdk");
 const express = require('express')
 const app = express()

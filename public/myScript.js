@@ -6,8 +6,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('connectToWallet').addEventListener('click', onWalletConnectRequest);
     // get minting button element and add click event listener
     document.getElementById('mintingButton').addEventListener('click', onMintingRequest);
-    // get cleanData button element and add click event listener
-    document.getElementById('cleanData').addEventListener('click', onCleanDataRequest);
+    // add listener for chaing location hash
+    window.addEventListener('hashchange', () => {
+        // get the hash from the url
+        const hash = window.location.hash;
+        // call onNavbarLinkClick function with hash as parameter
+        onNavbarLinkClick(hash.substring(1));
+    });
+    onNavbarLinkClick(window.location.hash.substring(1));
 });
 
 var currentAccount;
@@ -31,7 +37,9 @@ async function onWalletConnectRequest() {
         nftContract = new web3.eth.Contract(nftContractAbi, nftAddress);
 
         // put the current account as button name
-        document.getElementById('connectToWallet').innerText = currentAccount;
+        // select element by CSS selector p#address and set its innerText to currentAccount
+        document.querySelector('p.address').innerText = currentAccount;
+        document.getElementById('connectToWallet').innerText = "Refresh";
         document.getElementById('mintingButton').disabled = false;
 
         // await getNFTMintedByCurrnetAccountViaRPC();
@@ -83,14 +91,19 @@ async function getAllMintedTokensViaMyAPI() {
         button2.innerText = 'Trade';
         button2.setAttribute('class', 'transferButton');
         button2.addEventListener('click', () => onBurnRequest(nft.tokenId));
+        const button3 = document.createElement('button');
+        button3.innerText = 'Claim Back';
+        button3.setAttribute('class', 'transferButton');
+        button3.addEventListener('click', () => onBurnRequest(nft.tokenId));
 
         // add media.gateway image to the div
         const img = document.createElement('img');
         img.src = nft.media[0].gateway;
 
-        div.appendChild(img);
+        div.appendChild(img); 
         div.appendChild(button1);
         div.appendChild(button2);
+        div.appendChild(button3);
         mintedNFTs.appendChild(div);
     });
 }
@@ -101,3 +114,23 @@ async function onBurnRequest(tokenId) {
     .burn(tokenId)
     .send({ from: currentAccount });
 }
+
+// when somone clicks on #keeper link in the navbar only keeper secion must be visible
+// and the other sections must be hidden. Same for #owner and #admin links
+function onNavbarLinkClick(linkId) {
+    // get all the sections
+    const sections = document.getElementsByTagName('section');
+    // iterate over sections
+    for (let i = 0; i < sections.length; i++) {
+        // check if section id is equal to linkId
+        if (sections[i].id === linkId) {
+            // show the section
+            sections[i].style.display = 'block';
+        } else {
+            // hide the section
+            sections[i].style.display = 'none';
+        }
+    }
+}
+
+

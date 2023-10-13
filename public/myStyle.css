@@ -1,3 +1,75 @@
+* {
+    margin: 0;
+    /* padding: 0; */
+    box-sizing: border-box;
+}
+
+/* the header have nice moder dark look spanning across all window */
+header, footer {
+    background-color: #1a1a1a;
+    color: white;
+    padding: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+}
+
+header a {
+    color: white;
+    text-decoration: none;
+}
+
+header a:hover {
+    color: #b3b3b3;
+}
+
+nav {
+    background-color: #333333;
+    color: white;
+    /* padding: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center; */
+}
+
+/* the nav bar with links in one line. Links have nice modern buttons look */
+nav ul {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 1em;
+    /* flex wrap */
+    flex-wrap: wrap;
+}
+
+nav li {
+    list-style-type: none;
+    /* flex lenght 10em */
+    /* flex: 1 1 10em; */
+    padding: 1em;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #6e6e6e;
+}
+
+nav a:hover {
+    background-color: #b3b3b3;
+}
+
+
+
 #mintedNfts {
     display: flex;
     flex-direction: row;

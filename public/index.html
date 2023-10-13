@@ -17,12 +17,20 @@
         <h1>Gold repo</h1>
         <p>Manage your <p>gold NFT</p> with ease</p>
         <button id="connectToWallet">Connect Wallet</button>
-        <button id="cleanData">Clean Data</button>
     </header>
+
+    <nav>
+        <p class="address">not connected...</p>
+        <ul>
+            <li><a href="#keeper">Gold Keeper</a></li>
+            <li><a href="#owner">Gold Owner</a></li>
+            <li><a href="#admin">Administrator</a></li>
+        </ul>
+    </nav>
 
     <!-- main section -->
     <main>
-        <section id="mint">
+        <section id="keeper">
             <h2>Mint</h2>
             <p id="mintAddress">Mint Address: </p>
             <p id="mintBalance">Mint Balance: </p>
@@ -33,21 +41,28 @@
             <input type="text" id="imageUrl" placeholder="Image URL" value="https://cdn.pixabay.com/photo/2016/03/31/20/18/gold-1295668_640.jpg">
             <!-- input for NFT id -->
             <input type="text" id="nftId" placeholder="NFT ID">
-        </section>
-        
-        <section id="wallet">
-            <h2>Wallet</h2>
-            <p id="walletAddress">Wallet Address: </p>
-            <p id="walletBalance">Wallet Balance: </p>
-        </section>
 
-        <section id="nft">
             <h2>NFT</h2>
             <p id="nftAddress">NFT Address: </p>
             <p id="nftBalance">NFT Balance: </p>
             <div id="mintedNfts"></div>
         </section>
+        
+        <section id="owner">
+            <h2>Wallet</h2>
+            <p id="walletAddress">Wallet Address: </p>
+            <p id="walletBalance">Wallet Balance: </p>
+        </section>
+
+        <section id="admin">
+            <h2>Admin section</h2>
+        </section>
 
     </main>
+
+    <footer>
+        <p>Gold repo</p>
+        <p>Manage your <p>gold NFT</p> with ease</p>
+    </footer>
 </body>
 </html>

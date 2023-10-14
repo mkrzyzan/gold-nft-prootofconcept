@@ -52,10 +52,30 @@
             <h2>Wallet</h2>
             <p id="walletAddress">Wallet Address: </p>
             <p id="walletBalance">Wallet Balance: </p>
+            <div id="ownedNfts"></div>
         </section>
 
         <section id="admin">
             <h2>Admin section</h2>
+            <!-- form with one text input and radio button input with two options -->
+            <p>Grant role for address</p>
+            <form id="adminForm">
+                <input type="text" id="adminInput" placeholder="address">
+                <input type="radio" name="adminOption" id="adminOption1" value="0x3be7b9e88a8ec8233c8a85d8cf6d4ce7df2ac895e9900c1c81f61f28d8c0bd26">
+                <label for="adminOption1">Gold Keeper</label>
+                <input type="radio" name="adminOption" id="adminOption2" value="0x0000000000000000000000000000000000000000000000000000000000000000">
+                <label for="adminOption2">Admin</label>
+                <input type="button" value="Submit">
+            </form>
+            <p>Revoke role for address</p>
+            <form id="adminForm2">
+                <input type="text" id="adminInput2" placeholder="address">
+                <input type="radio" name="adminOption2" id="adminOption3" value="0x3be7b9e88a8ec8233c8a85d8cf6d4ce7df2ac895e9900c1c81f61f28d8c0bd26">
+                <label for="adminOption3">Gold Keeper</label>
+                <input type="radio" name="adminOption2" id="adminOption4" value="0x0000000000000000000000000000000000000000000000000000000000000000">
+                <label for="adminOption4">Admin</label>
+                <input type="button" value="Submit">
+            </form>
         </section>
 
     </main>

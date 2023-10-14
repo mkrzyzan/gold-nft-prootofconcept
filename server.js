@@ -8,19 +8,26 @@ const port = 3000
 const config = {
     apiKey: "FMzA-jPzQaGyIwIAcJW8WIHlJvIOTAv9", // Replace with your API key
     network: Network.ETH_SEPOLIA, // Replace with your network
-  };
+};
+
+const options = {
+    contractAddresses: ["0x2C6B7EEc10c794cCBE7234Aa33aD841BD7694BDa"],
+    tokenType: "ERC721"
+};
 
 // Creates an Alchemy object instance with the config to use for making requests
 const alchemy = new Alchemy(config);
 
 app.use(express.static('public'))
 
+app.get('/owner', async (req, res) => {
+    let address = req.query.address;
+    let ownedNfts = await alchemy.nft.getNftsForOwner(address, options);
+    res.send(ownedNfts);
+});
+
 app.get('/api', async (req, res) => {
     let address = req.query.address;
-    let options = {
-        contractAddresses: ["0x2C6B7EEc10c794cCBE7234Aa33aD841BD7694BDa"],
-        tokenType: "ERC721"
-    }
     // Calling the getMintedNfts method
     let mintedNfts = await alchemy.nft.getMintedNfts(address, options);
 

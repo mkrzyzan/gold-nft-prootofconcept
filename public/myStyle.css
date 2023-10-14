@@ -15,6 +15,10 @@ header, footer {
     align-items: center;
 }
 
+footer {
+    margin-top: 1em;
+}
+
 header h1 {
     margin: 0;
 }
@@ -68,9 +72,18 @@ nav a:hover {
     background-color: #b3b3b3;
 }
 
+/* nav p should hide overflosed text by elipsis in the moddle */
+nav p {
+    /* flex lenght 10em */
+    /* flex: 1 1 10em; */
+    padding: 1em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 
 
-#mintedNfts {
+#mintedNfts, #ownedNfts {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -90,4 +103,18 @@ nav a:hover {
 
 .nftCard img {
     width: 100%;
+}
+
+.nftCard a {
+    color: white;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #6e6e6e;
+    /* don't break line on white space */
+    white-space: nowrap;
+}
+
+.nftCard button {
+    margin-bottom: 10px;
 }

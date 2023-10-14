@@ -42,9 +42,8 @@ async function onWalletConnectRequest() {
         document.getElementById('connectToWallet').innerText = "Refresh";
         document.getElementById('mintingButton').disabled = false;
 
-        // await getNFTMintedByCurrnetAccountViaRPC();
-        // await getNFTBalanceOfCurrnetAccountViaOpenSea();
         await getAllMintedTokensViaMyAPI();
+        await getAllOwnedTokensViaMyAPI();
 
     } else {
         // show error message
@@ -63,6 +62,48 @@ async function onMintingRequest() {
     await nftContract.methods
     .safeMint(currentAccount, tokenId, nftData, pictureUrl)
     .send({ from: currentAccount });
+}
+
+async function getAllOwnedTokensViaMyAPI() {
+    // get all the owned NFTs from the API
+    const response = await fetch(`/owner?address=${currentAccount}`);
+    const data = await response.json();
+    // remove any existing divs from ownedNFTs div
+    const ownedNFTs = document.getElementById('ownedNfts');
+    ownedNFTs.innerHTML = '';
+    // add the size of data array to nftBalance p
+    document.getElementById('nftBalance').innerText = data.ownedNfts.length;
+    data.ownedNfts.forEach((nft) => {
+        // add div to ownedNFTs div
+        const div = document.createElement('div');
+        div.innerText = nft.tokenId;
+        // set class attribute
+        div.setAttribute('class', 'nftCard');
+        // add two buttons to each div
+        const button1 = document.createElement('button');
+        button1.innerText = 'View';
+        button1.setAttribute('class', 'viewButton');
+        button1.addEventListener('click', () => onViewRequest(nft.tokenId));
+        const button2 = document.createElement('button');
+        button2.innerText = 'Transfer';
+        button2.setAttribute('class', 'transferButton');
+        button2.addEventListener('click', () => onTransferRequest(nft.tokenId));
+
+        // add media.gateway image to the div
+        const img = document.createElement('img');
+        img.src = nft.media[0].gateway;
+
+        // add a link to the opensea nft page
+        const link = document.createElement('a');
+        link.href = `https://testnets.opensea.io/assets/sepolia/${nft.contract.address}/${nft.tokenId}`;
+        link.innerText = 'Go OpenSea';
+
+        div.appendChild(img);
+        div.appendChild(button1);
+        div.appendChild(button2);
+        div.appendChild(link);
+        ownedNFTs.appendChild(div);
+    });
 }
 
 async function getAllMintedTokensViaMyAPI() {

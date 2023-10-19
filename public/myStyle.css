@@ -83,7 +83,7 @@ nav p {
 }
 
 
-#mintedNfts, #ownedNfts {
+#mintedNfts, #ownedNfts, #disputedNfts {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;

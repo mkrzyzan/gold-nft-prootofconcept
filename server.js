@@ -14,7 +14,7 @@ const config = {
 };
 
 const options = {
-    contractAddresses: ["0xf00B82EAd59F668f09589Fa5F2d331cbe919Fd78"],
+    contractAddresses: ["0x401d264239541Becc4962E2Fd87E5ecF400f4269"],
     tokenType: "ERC721"
 };
 

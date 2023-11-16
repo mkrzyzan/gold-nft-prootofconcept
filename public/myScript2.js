@@ -71,7 +71,7 @@ async function onWalletConnectRequest() {
         document.getElementById('connectToWallet').innerHTML = currentAccount
 
         await getAllMintedTokensViaMyAPI();
-        // await getAllOwnedTokensViaMyAPI();
+        await getAllOwnedTokensViaMyAPI();
         // await getAllDisputedTokensViaMyAPI();
 
     } else {
@@ -142,6 +142,12 @@ function onCollectRequest(tokenId) {
     .send({ from: currentAccount });
 }
 
+async function onBurnRequest(tokenId) {
+    await nftContract.methods
+    .burn(tokenId)
+    .send({ from: currentAccount });
+}
+
 async function getAllDisputedTokensViaMyAPI() {
     const response = await fetch('/disputes');
     const data = await response.json();
@@ -178,45 +184,36 @@ async function getAllDisputedTokensViaMyAPI() {
 
 }
 
+var firstOwnedNFTDiv;
 async function getAllOwnedTokensViaMyAPI() {
     // get all the owned NFTs from the API
     const response = await fetch(`/owner?address=${currentAccount}`);
     const data = await response.json();
     // remove any existing divs from ownedNFTs div
     const ownedNFTs = document.getElementById('ownedNfts');
-    ownedNFTs.innerHTML = '';
+    // ownedNFTs.innerHTML = '';
     // add the size of data array to nftBalance p
-    document.getElementById('nftBalance').innerText = data.ownedNfts.length;
+    // document.getElementById('nftBalance').innerText = data.ownedNfts.length;
+
+    firstOwnedNFTDiv = firstOwnedNFTDiv || document.querySelector('#ownedNfts > div').cloneNode(true);
+    firstOwnedNFTDiv.querySelectorAll('*').forEach((node) => node.classList.remove('placeholder'));
+
+    ownedNFTs.innerHTML = '';
+
     data.ownedNfts.forEach((nft) => {
-        // add div to ownedNFTs div
-        const div = document.createElement('div');
-        div.innerText = nft.tokenId;
-        // set class attribute
-        div.setAttribute('class', 'nftCard');
-        // add two buttons to each div
-        const button1 = document.createElement('button');
-        button1.innerText = 'View';
-        button1.setAttribute('class', 'viewButton');
-        button1.addEventListener('click', () => onViewRequest(nft.tokenId));
-        const button2 = document.createElement('button');
-        button2.innerText = 'Pay Deposit Fees';
-        button2.setAttribute('class', 'transferButton');
-        button2.addEventListener('click', () => payDepositFees(nft.tokenId));
 
-        // add media.gateway image to the div
-        const img = document.createElement('img');
-        img.src = nft.media[0]?.gateway;
+        let clonedDiv = firstOwnedNFTDiv.cloneNode(true);
+        clonedDiv.querySelector('h5').innerText = nft.tokenId;
+        clonedDiv.querySelector('p').innerText = nft.description;
+        clonedDiv.querySelector('img').src = nft.media[0]?.gateway;
 
-        // add a link to the opensea nft page
-        const link = document.createElement('a');
-        link.href = `https://testnets.opensea.io/assets/sepolia/${nft.contract.address}/${nft.tokenId}`;
-        link.innerText = 'Go OpenSea';
+        clonedDiv.querySelector('.payDepFees').addEventListener('click', () => payDepositFees(nft.tokenId));    
 
-        div.appendChild(img);
-        div.appendChild(button1);
-        div.appendChild(button2);
-        div.appendChild(link);
-        ownedNFTs.appendChild(div);
+        // open a link with clicking on .viewHa button
+        let openSeaLink = `https://testnets.opensea.io/assets/sepolia/${nft.contract.address}/${nft.tokenId}`;
+        clonedDiv.querySelector('.viewHa').addEventListener('click', () => window.open(openSeaLink, '_blank'));
+
+        ownedNFTs.appendChild(clonedDiv);
     });
 }
 
@@ -257,29 +254,5 @@ async function getAllMintedTokensViaMyAPI() {
     });
 }
 
-
-async function onBurnRequest(tokenId) {
-    await nftContract.methods
-    .burn(tokenId)
-    .send({ from: currentAccount });
-}
-
-// when somone clicks on #keeper link in the navbar only keeper secion must be visible
-// and the other sections must be hidden. Same for #owner and #admin links
-function onNavbarLinkClick(linkId) {
-    // get all the sections
-    const sections = document.getElementsByTagName('section');
-    // iterate over sections
-    for (let i = 0; i < sections.length; i++) {
-        // check if section id is equal to linkId
-        if (sections[i].id === linkId) {
-            // show the section
-            sections[i].style.display = 'block';
-        } else {
-            // hide the section
-            sections[i].style.display = 'none';
-        }
-    }
-}
 
 

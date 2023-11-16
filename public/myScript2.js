@@ -256,6 +256,18 @@ async function getAllMintedTokensViaMyAPI() {
         clonedDiv.querySelector('#setDepositFeesBtn').setAttribute('data-bs-token-id', nft.tokenId);
         clonedDiv.querySelector('#claimBackBtn').setAttribute('data-bs-token-id', nft.tokenId);
 
+        let feesDeadline = parseInt(nft.depositFees[3].hex, 16);
+        // calculate the time difference between now and feesDeadline
+        let timeDiff = feesDeadline - Date.now() / 1000;
+        // if timeDiff is negative, then set it to 0
+        timeDiff = timeDiff < 0 ? 0 : timeDiff;
+
+        let feesPaid = parseInt(nft.depositFees[2].hex, 16);
+        // add timeDiff to the button, to be visible for user
+        clonedDiv.querySelector('#claimBackBtn').innerText = `Claim Back in ${timeDiff} sec`;
+        clonedDiv.querySelector('#collectDepositFeesBtn').innerText = `Collect Fees (${feesPaid} WEI) in ${timeDiff} sec`;
+
+
         mintedNFTs.appendChild(clonedDiv);
     });
 }

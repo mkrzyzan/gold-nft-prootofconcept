@@ -53,13 +53,9 @@ app.get('/disputes', async (req, res) => {
     });
 });
 
-
-app.get('/owner', async (req, res) => {
-    let address = req.query.address;
-    let ownedNfts = await alchemy.nft.getNftsForOwner(address, options);
-
+async function enrichNftData(nftData) {
     // 0xebdac090000000000000000000000000000000000000000000000000000000000000007b
-    let rpcEthCallRequests = ownedNfts.ownedNfts.map(nft => ({
+    let rpcEthCallRequests = nftData.map(nft => ({
         jsonrpc: "2.0",
         method: "eth_call",
         params: [{
@@ -81,17 +77,22 @@ app.get('/owner', async (req, res) => {
     // convert the response to JSON
     repJson = await rpcEthCallResponses.json();
 
-    console.log(JSON.stringify(repJson, null, 2));
-
-
     repJson.forEach(rep => {
         // decode each response using 'depositFees' method iface
         // iface.decode
         let decoded = iface.decodeFunctionResult("depositFees", rep.result);
         // add the decoded response to the ownedNfts object
-        ownedNfts.ownedNfts.find(nft => nft.tokenId == rep.id).depositFees = decoded;
+        // console.log(decoded);
+        nftData.find(nft => nft.tokenId == rep.id).depositFees = decoded;
     });
 
+}
+
+app.get('/owner', async (req, res) => {
+    let address = req.query.address;
+    let ownedNfts = await alchemy.nft.getNftsForOwner(address, options);
+
+    await enrichNftData(ownedNfts.ownedNfts);
 
     res.send(ownedNfts);
 });
@@ -100,6 +101,8 @@ app.get('/api', async (req, res) => {
     let address = req.query.address;
     // Calling the getMintedNfts method
     let mintedNfts = await alchemy.nft.getMintedNfts(address, options);
+
+    await enrichNftData(mintedNfts.nfts);
 
     // create an array of rpcEthCallRequests
     let rpcEthCallRequests = mintedNfts.nfts.map(nft => ({

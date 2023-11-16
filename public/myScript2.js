@@ -130,10 +130,10 @@ function setDepositFees(tokenId, fee, dueDateSec) {
     .send({ from: currentAccount });
 }
 
-function payDepositFees(tokenId) {
+function payDepositFees(tokenId, fee) {
     nftContract.methods
     .payDepositFees(tokenId)
-    .send({ from: currentAccount, value: 100 });
+    .send({ from: currentAccount, value: fee });
 }
 
 function onCollectRequest(tokenId) {
@@ -207,7 +207,13 @@ async function getAllOwnedTokensViaMyAPI() {
         clonedDiv.querySelector('p').innerText = nft.description;
         clonedDiv.querySelector('img').src = nft.media[0]?.gateway;
 
-        clonedDiv.querySelector('.payDepFees').addEventListener('click', () => payDepositFees(nft.tokenId));    
+        // convert hex string nftFee to number
+        let nftFeeInt = parseInt(nft.depositFees[1].hex, 16);
+
+        // add nftFee to the button, to be visible for user
+        clonedDiv.querySelector('.payDepFees').innerText = `Pay ${nftFeeInt} wei`;
+
+        clonedDiv.querySelector('.payDepFees').addEventListener('click', () => payDepositFees(nft.tokenId, nftFeeInt));    
 
         // open a link with clicking on .viewHa button
         let openSeaLink = `https://testnets.opensea.io/assets/sepolia/${nft.contract.address}/${nft.tokenId}`;

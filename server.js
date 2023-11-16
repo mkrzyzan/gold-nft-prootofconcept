@@ -57,6 +57,42 @@ app.get('/disputes', async (req, res) => {
 app.get('/owner', async (req, res) => {
     let address = req.query.address;
     let ownedNfts = await alchemy.nft.getNftsForOwner(address, options);
+
+    // 0xebdac090000000000000000000000000000000000000000000000000000000000000007b
+    let rpcEthCallRequests = ownedNfts.ownedNfts.map(nft => ({
+        jsonrpc: "2.0",
+        method: "eth_call",
+        params: [{
+            to: options.contractAddresses[0],
+            data: "0xebdac090" + parseInt(nft.tokenId).toString(16).padStart(64, '0')
+        }, "latest"],
+        id: nft.tokenId
+    }));
+
+    // fetch POST request
+    let rpcEthCallResponses = await fetch("https://eth-sepolia.g.alchemy.com/v2/FMzA-jPzQaGyIwIAcJW8WIHlJvIOTAv9", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(rpcEthCallRequests)
+    });
+
+    // convert the response to JSON
+    repJson = await rpcEthCallResponses.json();
+
+    console.log(JSON.stringify(repJson, null, 2));
+
+
+    repJson.forEach(rep => {
+        // decode each response using 'depositFees' method iface
+        // iface.decode
+        let decoded = iface.decodeFunctionResult("depositFees", rep.result);
+        // add the decoded response to the ownedNfts object
+        ownedNfts.ownedNfts.find(nft => nft.tokenId == rep.id).depositFees = decoded;
+    });
+
+
     res.send(ownedNfts);
 });
 

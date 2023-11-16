@@ -11,7 +11,8 @@
     "express": "^4.18.2",
     "node-fetch": "^2.7.0",
     "whatwg-url": "^14.0.0",
-    "webidl-conversions": "^7.0.0"
+    "webidl-conversions": "^7.0.0",
+    "tr46": "^5.0.0"
   },
   "license": "MIT",
   "engines": {

@@ -36,7 +36,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     claimBackModal.querySelector('.modal-footer button:nth-child(2)').addEventListener('click', function () {
         const tokenId = claimBackModal.querySelector('.modal-body input').value;
-        onClaimRequest(tokenId);
+        const tokenVal = claimBackModal.querySelector('.modal-body div:nth-child(2) input').value;
+        onClaimRequest(tokenId, tokenVal);
     });
 
     
@@ -72,7 +73,7 @@ async function onWalletConnectRequest() {
 
         await getAllMintedTokensViaMyAPI();
         await getAllOwnedTokensViaMyAPI();
-        // await getAllDisputedTokensViaMyAPI();
+        await getAllDisputedTokensViaMyAPI();
 
     } else {
         // show error message
@@ -118,10 +119,10 @@ function onDeclineRequest(tokenId) {
     .send({ from: currentAccount });
 }
 
-function onClaimRequest(tokenId) {
+function onClaimRequest(tokenId, tokenVal) {
     nftContract.methods
     .claimNftBack(tokenId)
-    .send({ from: currentAccount });
+    .send({ from: currentAccount, value: tokenVal });
 }
 
 function setDepositFees(tokenId, fee, dueDateSec) {
@@ -148,38 +149,28 @@ async function onBurnRequest(tokenId) {
     .send({ from: currentAccount });
 }
 
+var firstDisputedNFTDiv;
 async function getAllDisputedTokensViaMyAPI() {
     const response = await fetch('/disputes');
     const data = await response.json();
-    // remove any existing divs from disputedNFTs div
     const disputedNFTs = document.getElementById('disputedNfts');
-    disputedNFTs.innerHTML = '';
     // add the size of data array to disputedBalance p
-    document.getElementById('disputedBalance').innerText = data.disputedNfts.length;
+    // document.getElementById('disputedBalance').innerText = data.disputedNfts.length;
+
+    firstDisputedNFTDiv = firstDisputedNFTDiv || document.querySelector('#disputedNfts > div').cloneNode(true);
+    firstDisputedNFTDiv.querySelectorAll('*').forEach((node) => node.classList.remove('placeholder'));
+
+    // remove any existing divs from disputedNFTs div
+    disputedNFTs.innerHTML = '';
+
     data.disputedNfts.forEach((tokenId) => {
-        // add div to disputedNFTs div
-        const div = document.createElement('div');
-        div.innerText = tokenId;
-        // set class attribute
-        div.setAttribute('class', 'nftCard');
-        // add two buttons to each div
-        const button1 = document.createElement('button');
-        button1.innerText = 'Approve';
-        button1.setAttribute('class', 'viewButton');
-        button1.addEventListener('click', () => onApproveRequest(tokenId));
-        const button2 = document.createElement('button');
-        button2.innerText = 'Decline';
-        button2.setAttribute('class', 'transferButton');
-        button2.addEventListener('click', () => onDeclineRequest(tokenId));
 
-        // add media.gateway image to the div
-        //const img = document.createElement('img');
-        //img.src = nft.media[0].gateway;
+        let clonedDiv = firstDisputedNFTDiv.cloneNode(true);
 
-        //div.appendChild(img);
-        div.appendChild(button1);
-        div.appendChild(button2);
-        disputedNFTs.appendChild(div);
+        clonedDiv.querySelector('h5').innerText = tokenId;
+        clonedDiv.querySelector('.approveBtn').addEventListener('click', () => onApproveRequest(tokenId));
+        clonedDiv.querySelector('.declineBtn').addEventListener('click', () => onDeclineRequest(tokenId));
+        disputedNFTs.appendChild(clonedDiv);
     });
 
 }

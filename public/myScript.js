@@ -1,19 +1,46 @@
 // call function on Dom load event. Use AddListener
 document.addEventListener('DOMContentLoaded', function() {
-    // make mintingButton disabled
-    document.getElementById('mintingButton').disabled = true;
     // get button element and add click event listener
     document.getElementById('connectToWallet').addEventListener('click', onWalletConnectRequest);
     // get minting button element and add click event listener
     document.getElementById('mintingButton').addEventListener('click', onMintingRequest);
-    // add listener for chaing location hash
-    window.addEventListener('hashchange', () => {
-        // get the hash from the url
-        const hash = window.location.hash;
-        // call onNavbarLinkClick function with hash as parameter
-        onNavbarLinkClick(hash.substring(1));
+
+    // set despositfees modal setup
+    const setDepositFeesModal = document.getElementById('setDepositFeesModal');
+    setDepositFeesModal.addEventListener('show.bs.modal', function (event) {
+        // Button that triggered the modal
+        const button = event.relatedTarget;
+        // Extract info from data-bs-* attributes
+        const tokenId = button.getAttribute('data-bs-token-id');
+        // Update the modal's content.
+        const modalBodyInput = setDepositFeesModal.querySelector('.modal-body input');
+        modalBodyInput.value = tokenId;
     });
-    onNavbarLinkClick(window.location.hash.substring(1));
+    setDepositFeesModal.querySelector('.modal-footer button:nth-child(2)').addEventListener('click', function () {
+        const tokenId = setDepositFeesModal.querySelector('.modal-body div:nth-child(1) input').value;
+        const dueDateSec = setDepositFeesModal.querySelector('.modal-body div:nth-child(2) input').value;
+        const fee = setDepositFeesModal.querySelector('.modal-body div:nth-child(3) input').value;
+        setDepositFees(tokenId, fee, dueDateSec);
+    });
+
+    // claim back modal setup
+    const claimBackModal = document.getElementById('claimBackModal');
+    claimBackModal.addEventListener('show.bs.modal', function (event) {
+        // Button that triggered the modal
+        const button = event.relatedTarget;
+        // Extract info from data-bs-* attributes
+        const tokenId = button.getAttribute('data-bs-token-id');
+        // Update the modal's content.
+        const modalBodyInput = claimBackModal.querySelector('.modal-body input');
+        modalBodyInput.value = tokenId;
+    });
+    claimBackModal.querySelector('.modal-footer button:nth-child(2)').addEventListener('click', function () {
+        const tokenId = claimBackModal.querySelector('.modal-body input').value;
+        const tokenVal = claimBackModal.querySelector('.modal-body div:nth-child(2) input').value;
+        onClaimRequest(tokenId, tokenVal);
+    });
+
+    
 });
 
 var currentAccount;
@@ -38,9 +65,11 @@ async function onWalletConnectRequest() {
 
         // put the current account as button name
         // select element by CSS selector p#address and set its innerText to currentAccount
-        document.querySelector('p.address').innerText = currentAccount;
-        document.getElementById('connectToWallet').innerText = "Refresh";
-        document.getElementById('mintingButton').disabled = false;
+        // document.querySelector('p.address').innerText = currentAccount;
+        // document.getElementById('connectToWallet').innerText = "Refresh";
+        // document.getElementById('mintingButton').disabled = false;
+
+        document.getElementById('connectToWallet').innerHTML = currentAccount
 
         await getAllMintedTokensViaMyAPI();
         await getAllOwnedTokensViaMyAPI();
@@ -54,15 +83,28 @@ async function onWalletConnectRequest() {
 
 async function onMintingRequest() {
     // get nftData from the textarea
-    const nftData = document.getElementById('nftData').value;
+    const nftData = document.getElementById('newTokenDescriptionInput').value;
     // get pictureUrl from the input
-    const pictureUrl = document.getElementById('imageUrl').value;
+    const pictureUrl = document.getElementById('newTokenPicUrl').value;
     // get tokenId from the input
-    const tokenId = document.getElementById('nftId').value;
+    const tokenId = document.getElementById('newTokenIdInput').value;
 
-    await nftContract.methods
+    // disable the minting button
+    document.getElementById('mintingButton').disabled = true;
+
+    nftContract.methods
     .safeMint(currentAccount, tokenId, nftData, pictureUrl)
-    .send({ from: currentAccount });
+    .send({ from: currentAccount })
+    .on('receipt', (receipt) => {
+        console.log(receipt);
+        // refresh the page
+        window.location.reload();
+    })
+    .on('error', (error) => {
+        console.log(error);
+        // enable the minting button
+        document.getElementById('mintingButton').disabled = false;
+    });
 }
 
 function onApproveRequest(tokenId) {
@@ -77,22 +119,22 @@ function onDeclineRequest(tokenId) {
     .send({ from: currentAccount });
 }
 
-function onClaimRequest(tokenId) {
+function onClaimRequest(tokenId, tokenVal) {
     nftContract.methods
     .claimNftBack(tokenId)
-    .send({ from: currentAccount });
+    .send({ from: currentAccount, value: tokenVal });
 }
 
-function setDepositFees(tokenId) {
+function setDepositFees(tokenId, fee, dueDateSec) {
     nftContract.methods
-    .setDespositFees(tokenId, 100, 100)
+    .setDespositFees(tokenId, fee, dueDateSec)
     .send({ from: currentAccount });
 }
 
-function payDepositFees(tokenId) {
+function payDepositFees(tokenId, fee) {
     nftContract.methods
     .payDepositFees(tokenId)
-    .send({ from: currentAccount, value: 100 });
+    .send({ from: currentAccount, value: fee });
 }
 
 function onCollectRequest(tokenId) {
@@ -101,155 +143,125 @@ function onCollectRequest(tokenId) {
     .send({ from: currentAccount });
 }
 
-async function getAllDisputedTokensViaMyAPI() {
-    const response = await fetch('/disputes');
-    const data = await response.json();
-    // remove any existing divs from disputedNFTs div
-    const disputedNFTs = document.getElementById('disputedNfts');
-    disputedNFTs.innerHTML = '';
-    // add the size of data array to disputedBalance p
-    document.getElementById('disputedBalance').innerText = data.disputedNfts.length;
-    data.disputedNfts.forEach((tokenId) => {
-        // add div to disputedNFTs div
-        const div = document.createElement('div');
-        div.innerText = tokenId;
-        // set class attribute
-        div.setAttribute('class', 'nftCard');
-        // add two buttons to each div
-        const button1 = document.createElement('button');
-        button1.innerText = 'Approve';
-        button1.setAttribute('class', 'viewButton');
-        button1.addEventListener('click', () => onApproveRequest(tokenId));
-        const button2 = document.createElement('button');
-        button2.innerText = 'Decline';
-        button2.setAttribute('class', 'transferButton');
-        button2.addEventListener('click', () => onDeclineRequest(tokenId));
-
-        // add media.gateway image to the div
-        //const img = document.createElement('img');
-        //img.src = nft.media[0].gateway;
-
-        //div.appendChild(img);
-        div.appendChild(button1);
-        div.appendChild(button2);
-        disputedNFTs.appendChild(div);
-    });
-
-}
-
-async function getAllOwnedTokensViaMyAPI() {
-    // get all the owned NFTs from the API
-    const response = await fetch(`/owner?address=${currentAccount}`);
-    const data = await response.json();
-    // remove any existing divs from ownedNFTs div
-    const ownedNFTs = document.getElementById('ownedNfts');
-    ownedNFTs.innerHTML = '';
-    // add the size of data array to nftBalance p
-    document.getElementById('nftBalance').innerText = data.ownedNfts.length;
-    data.ownedNfts.forEach((nft) => {
-        // add div to ownedNFTs div
-        const div = document.createElement('div');
-        div.innerText = nft.tokenId;
-        // set class attribute
-        div.setAttribute('class', 'nftCard');
-        // add two buttons to each div
-        const button1 = document.createElement('button');
-        button1.innerText = 'View';
-        button1.setAttribute('class', 'viewButton');
-        button1.addEventListener('click', () => onViewRequest(nft.tokenId));
-        const button2 = document.createElement('button');
-        button2.innerText = 'Pay Deposit Fees';
-        button2.setAttribute('class', 'transferButton');
-        button2.addEventListener('click', () => payDepositFees(nft.tokenId));
-
-        // add media.gateway image to the div
-        const img = document.createElement('img');
-        img.src = nft.media[0]?.gateway;
-
-        // add a link to the opensea nft page
-        const link = document.createElement('a');
-        link.href = `https://testnets.opensea.io/assets/sepolia/${nft.contract.address}/${nft.tokenId}`;
-        link.innerText = 'Go OpenSea';
-
-        div.appendChild(img);
-        div.appendChild(button1);
-        div.appendChild(button2);
-        div.appendChild(link);
-        ownedNFTs.appendChild(div);
-    });
-}
-
-async function getAllMintedTokensViaMyAPI() {
-    // get all the minted NFTs from the API
-    const response = await fetch(`/api?address=${currentAccount}`);
-    const data = await response.json();
-    // remove any existing divs from mintedNFTs div
-    const mintedNFTs = document.getElementById('mintedNfts');
-    mintedNFTs.innerHTML = '';
-    // add the size of data array to nftBalance p
-    document.getElementById('nftBalance').innerText = data.nfts.length;
-    data.nfts.forEach((nft) => {
-        // add div to mintedNFTs div
-        const div = document.createElement('div');
-
-
-        div.innerText = nft.tokenId;
-        // set class attribute
-        div.setAttribute('class', 'nftCard');
-        // add two buttons to each div
-        const button1 = document.createElement('button');
-        button1.innerText = 'Burn';
-        button1.setAttribute('class', 'viewButton');
-        button1.addEventListener('click', () => onBurnRequest(nft.tokenId));
-        const button2 = document.createElement('button');
-        button2.innerText = 'Set Deposit Fees';
-        button2.setAttribute('class', 'transferButton');
-        button2.addEventListener('click', () => setDepositFees(nft.tokenId));
-        const button3 = document.createElement('button');
-        button3.innerText = 'Claim Back';
-        button3.setAttribute('class', 'transferButton');
-        button3.addEventListener('click', () => onClaimRequest(nft.tokenId));
-        const button4 = document.createElement('button');
-        button4.innerText = 'Collect deposit fees';
-        button4.setAttribute('class', 'transferButton');
-        button4.addEventListener('click', () => onCollectRequest(nft.tokenId));
-
-        // add media.gateway image to the div
-        const img = document.createElement('img');
-        img.src = nft.media[0]?.gateway;
-
-        div.appendChild(img); 
-        div.appendChild(button1);
-        div.appendChild(button2);
-        div.appendChild(button4);
-        div.appendChild(button3);
-        mintedNFTs.appendChild(div);
-    });
-}
-
-
 async function onBurnRequest(tokenId) {
     await nftContract.methods
     .burn(tokenId)
     .send({ from: currentAccount });
 }
 
-// when somone clicks on #keeper link in the navbar only keeper secion must be visible
-// and the other sections must be hidden. Same for #owner and #admin links
-function onNavbarLinkClick(linkId) {
-    // get all the sections
-    const sections = document.getElementsByTagName('section');
-    // iterate over sections
-    for (let i = 0; i < sections.length; i++) {
-        // check if section id is equal to linkId
-        if (sections[i].id === linkId) {
-            // show the section
-            sections[i].style.display = 'block';
-        } else {
-            // hide the section
-            sections[i].style.display = 'none';
-        }
-    }
+var firstDisputedNFTDiv;
+async function getAllDisputedTokensViaMyAPI() {
+    const response = await fetch('/disputes');
+    const data = await response.json();
+    const disputedNFTs = document.getElementById('disputedNfts');
+    // add the size of data array to disputedBalance p
+    // document.getElementById('disputedBalance').innerText = data.disputedNfts.length;
+
+    firstDisputedNFTDiv = firstDisputedNFTDiv || document.querySelector('#disputedNfts > div').cloneNode(true);
+    firstDisputedNFTDiv.querySelectorAll('*').forEach((node) => node.classList.remove('placeholder'));
+
+    // remove any existing divs from disputedNFTs div
+    disputedNFTs.innerHTML = '';
+
+    data.disputedNfts.forEach((tokenId) => {
+
+        let clonedDiv = firstDisputedNFTDiv.cloneNode(true);
+
+        clonedDiv.querySelector('h5').innerText = tokenId;
+        clonedDiv.querySelector('.approveBtn').addEventListener('click', () => onApproveRequest(tokenId));
+        clonedDiv.querySelector('.declineBtn').addEventListener('click', () => onDeclineRequest(tokenId));
+        disputedNFTs.appendChild(clonedDiv);
+    });
+
 }
+
+var firstOwnedNFTDiv;
+async function getAllOwnedTokensViaMyAPI() {
+    // get all the owned NFTs from the API
+    const response = await fetch(`/owner?address=${currentAccount}`);
+    const data = await response.json();
+    // remove any existing divs from ownedNFTs div
+    const ownedNFTs = document.getElementById('ownedNfts');
+    // ownedNFTs.innerHTML = '';
+    // add the size of data array to nftBalance p
+    // document.getElementById('nftBalance').innerText = data.ownedNfts.length;
+
+    firstOwnedNFTDiv = firstOwnedNFTDiv || document.querySelector('#ownedNfts > div').cloneNode(true);
+    firstOwnedNFTDiv.querySelectorAll('*').forEach((node) => node.classList.remove('placeholder'));
+
+    ownedNFTs.innerHTML = '';
+
+    data.ownedNfts.forEach((nft) => {
+
+        let clonedDiv = firstOwnedNFTDiv.cloneNode(true);
+        clonedDiv.querySelector('h5').innerText = nft.tokenId;
+        clonedDiv.querySelector('p').innerText = nft.description;
+        clonedDiv.querySelector('img').src = nft.media[0]?.gateway;
+
+        // convert hex string nftFee to number
+        let nftFeeInt = parseInt(nft.depositFees[1].hex, 16);
+
+        // add nftFee to the button, to be visible for user
+        clonedDiv.querySelector('.payDepFees').innerText = `Pay ${nftFeeInt} wei`;
+
+        clonedDiv.querySelector('.payDepFees').addEventListener('click', () => payDepositFees(nft.tokenId, nftFeeInt));    
+
+        // open a link with clicking on .viewHa button
+        let openSeaLink = `https://testnets.opensea.io/assets/sepolia/${nft.contract.address}/${nft.tokenId}`;
+        clonedDiv.querySelector('.viewHa').addEventListener('click', () => window.open(openSeaLink, '_blank'));
+
+        ownedNFTs.appendChild(clonedDiv);
+    });
+}
+
+var firstDiv;
+async function getAllMintedTokensViaMyAPI() {
+    // get all the minted NFTs from the API
+    const response = await fetch(`/api?address=${currentAccount}`);
+    const data = await response.json();
+    // remove any existing divs from mintedNFTs div
+    const mintedNFTs = document.getElementById('nftBalance');
+    // add the size of data array to nftBalance p
+    // document.getElementById('nftBalance').innerText = data.nfts.length;
+
+    // make a deep copy the fir st div of nftBalance div
+    firstDiv = firstDiv || document.querySelector('#nftBalance > div').cloneNode(true);
+
+    // remove 'placeholder' class from the firstDiv clone element
+    firstDiv.querySelectorAll('*').forEach((node) => node.classList.remove('placeholder'));
+
+    // hide the firstDiv
+    // firstDiv.style.display = 'none';
+    mintedNFTs.innerHTML = '';
+
+    data.nfts.forEach((nft) => {
+
+        let clonedDiv = firstDiv.cloneNode(true);
+
+        clonedDiv.querySelector('h5').innerText = nft.tokenId;
+        clonedDiv.querySelector('p').innerText = nft.description;
+        clonedDiv.querySelector('img').src = nft.media[0]?.gateway;
+
+        clonedDiv.querySelector('#burnBtn').addEventListener('click', () => onBurnRequest(nft.tokenId));
+        clonedDiv.querySelector('#collectDepositFeesBtn').addEventListener('click', () => onCollectRequest(nft.tokenId));
+        clonedDiv.querySelector('#setDepositFeesBtn').setAttribute('data-bs-token-id', nft.tokenId);
+        clonedDiv.querySelector('#claimBackBtn').setAttribute('data-bs-token-id', nft.tokenId);
+
+        let feesDeadline = parseInt(nft.depositFees[3].hex, 16);
+        // calculate the time difference between now and feesDeadline
+        let timeDiff = feesDeadline - Date.now() / 1000;
+        // if timeDiff is negative, then set it to 0
+        timeDiff = timeDiff < 0 ? 0 : timeDiff;
+
+        let feesPaid = parseInt(nft.depositFees[2].hex, 16);
+        // add timeDiff to the button, to be visible for user
+        clonedDiv.querySelector('#claimBackBtn').innerText = `Claim Back in ${timeDiff} sec`;
+        clonedDiv.querySelector('#collectDepositFeesBtn').innerText = `Collect Fees (${feesPaid} WEI) in ${timeDiff} sec`;
+
+
+        mintedNFTs.appendChild(clonedDiv);
+    });
+}
+
 
 
